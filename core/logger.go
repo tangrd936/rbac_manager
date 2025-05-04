@@ -1,13 +1,12 @@
 package core
 
 import (
-	"os"
-	"path/filepath"
-	"time"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"os"
+	"path/filepath"
+	"rbac_manager/global"
 )
 
 /*
@@ -21,7 +20,6 @@ import (
 */
 
 // 全局日志实例
-var logger *zap.Logger
 
 // InitLogger 初始化zap日志配置
 func InitLogger(logDir string) {
@@ -77,34 +75,29 @@ func InitLogger(logDir string) {
 	// ----------------------------
 	// 5. 构建Logger实例
 	// ----------------------------
-	logger = zap.New(core,
+	global.Log = zap.New(core,
 		zap.AddCaller(),                   // 记录调用信息
 		zap.AddCallerSkip(1),              // 包装函数调用层级
 		zap.AddStacktrace(zap.ErrorLevel), // 错误级别记录堆栈
 	)
 }
 
-// GetLogger 获取日志实例
-func GetLogger() *zap.Logger {
-	return logger
-}
-
 // ----------------------------
 // 使用示例
 // ----------------------------
-func main() {
-	// 初始化日志（目录为./logs）
-	InitLogger("./logs")
-	defer logger.Sync() // 确保退出前刷新缓冲区
-
-	// 记录结构化日志
-	for i := 0; i < 1000; i++ {
-		GetLogger().Info("处理请求",
-			zap.String("request_id", "req123"),
-			zap.Int("loop_index", i),
-			zap.Time("start_time", time.Now()),
-		)
-
-		time.Sleep(1 * time.Second)
-	}
-}
+//func main() {
+//	// 初始化日志（目录为./logs）
+//	InitLogger("./logs")
+//	defer logger.Sync() // 确保退出前刷新缓冲区
+//
+//	// 记录结构化日志
+//	for i := 0; i < 1000; i++ {
+//		GetLogger().Info("处理请求",
+//			zap.String("request_id", "req123"),
+//			zap.Int("loop_index", i),
+//			zap.Time("start_time", time.Now()),
+//		)
+//
+//		time.Sleep(1 * time.Second)
+//	}
+//}

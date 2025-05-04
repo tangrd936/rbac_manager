@@ -11,5 +11,6 @@ import (
 
 func main() {
 	global.Conf = core.GetConfig()
-	fmt.Printf("%#v\n", global.Conf)
+	core.InitLogger("logs")
+	global.Log.Info(fmt.Sprintf("%#v\n", global.Conf))
 }
