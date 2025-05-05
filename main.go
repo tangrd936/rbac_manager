@@ -10,7 +10,8 @@ import (
 // the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
 
 func main() {
-	global.Conf = core.GetConfig()
 	core.InitLogger("logs")
+	global.Conf = core.GetConfig()
+	core.InitDB()
 	global.Log.Info(fmt.Sprintf("%#v\n", global.Conf))
 }

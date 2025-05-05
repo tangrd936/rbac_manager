@@ -1,9 +1,11 @@
 package core
 
 import (
+	"context"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"gorm.io/gorm/logger"
 	"os"
 	"path/filepath"
 	"rbac_manager/global"
@@ -73,4 +75,41 @@ func InitLogger(logDir string) {
 		zap.AddCallerSkip(1),              // 包装函数调用层级
 		zap.AddStacktrace(zap.ErrorLevel), // 错误级别记录堆栈
 	)
+}
+
+// GormLog 适配gorm日志
+/*
+//	type Interface interface {
+//		LogMode(LogLevel) Interface
+//		Info(context.Context, string, ...interface{})
+//		Warn(context.Context, string, ...interface{})
+//		Error(context.Context, string, ...interface{})
+//		Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error)
+//	}
+*/
+type GormLog struct {
+}
+
+// LogMode log mode
+func (l *GormLog) LogMode(level logger.LogLevel) logger.Interface {
+	return l
+}
+
+// Info print info
+func (l *GormLog) Info(ctx context.Context, msg string, data ...interface{}) {
+	global.Log.Info(msg)
+}
+
+// Warn print warn messages
+func (l *GormLog) Warn(ctx context.Context, msg string, data ...interface{}) {
+	global.Log.Warn(msg)
+}
+
+// Error print error messages
+func (l *GormLog) Error(ctx context.Context, msg string, data ...interface{}) {
+	global.Log.Error(msg)
+}
+
+func (l *GormLog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+	return
 }
