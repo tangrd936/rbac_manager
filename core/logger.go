@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"rbac_manager/global"
+	"time"
 )
 
 /*
@@ -34,7 +35,7 @@ func InitLogger(logDir string) {
 	// ----------------------------
 	// 1. 配置日志输出切割规则
 	// ----------------------------
-	logFile := filepath.Join(logDir, "app.log")
+	logFile := filepath.Join(logDir, "app-"+time.Now().Format("2006-01-02")+".log")
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   logFile, // 日志文件路径
 		MaxSize:    100,     // 单个文件最大尺寸(MB)
