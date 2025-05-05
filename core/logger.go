@@ -32,9 +32,7 @@ func InitLogger(logDir string) {
 		panic("无法创建日志目录: " + err.Error())
 	}
 
-	// ----------------------------
 	// 1. 配置日志输出切割规则
-	// ----------------------------
 	logFile := filepath.Join(logDir, "app-"+time.Now().Format("2006-01-02")+".log")
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   logFile, // 日志文件路径
@@ -45,16 +43,12 @@ func InitLogger(logDir string) {
 		LocalTime:  true,    // 使用本地时间
 	}
 
-	// ----------------------------
 	// 2. 配置日志编码器
-	// ----------------------------
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05")
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
-	// ----------------------------
 	// 3. 创建多端输出（文件 + 控制台）
-	// ----------------------------
 	fileWriter := zapcore.AddSync(lumberJackLogger)
 	consoleWriter := zapcore.Lock(os.Stdout)
 
@@ -64,41 +58,19 @@ func InitLogger(logDir string) {
 		consoleWriter, // 生产环境可移除
 	)
 
-	// ----------------------------
 	// 4. 创建核心配置
-	// ----------------------------
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderConfig), // JSON格式编码器
 		multiWriteSyncer,                      // 多端输出
-		zap.DebugLevel,                        // 日志级别
+		zap.InfoLevel,                         // 日志级别
 	)
 
 	// ----------------------------
 	// 5. 构建Logger实例
 	// ----------------------------
 	global.Log = zap.New(core,
-		zap.AddCaller(),                   // 记录调用信息
+		zap.AddCaller(),                   // 记录调用信息,即代码行号
 		zap.AddCallerSkip(1),              // 包装函数调用层级
 		zap.AddStacktrace(zap.ErrorLevel), // 错误级别记录堆栈
 	)
 }
-
-// ----------------------------
-// 使用示例
-// ----------------------------
-//func main() {
-//	// 初始化日志（目录为./logs）
-//	InitLogger("./logs")
-//	defer logger.Sync() // 确保退出前刷新缓冲区
-//
-//	// 记录结构化日志
-//	for i := 0; i < 1000; i++ {
-//		GetLogger().Info("处理请求",
-//			zap.String("request_id", "req123"),
-//			zap.Int("loop_index", i),
-//			zap.Time("start_time", time.Now()),
-//		)
-//
-//		time.Sleep(1 * time.Second)
-//	}
-//}

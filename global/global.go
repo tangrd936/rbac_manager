@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	// 全局配置
+	// Conf 全局配置
 	Conf *config.Config
-	// 全局日志配置
+	// Log 全局日志配置
 	Log *zap.Logger
 )
