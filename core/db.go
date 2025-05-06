@@ -22,8 +22,8 @@ func InitDB() {
 
 	// 创建数据库连接
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger:      new(GormLog), // 配置 GORM 日志器
-		PrepareStmt: true,         // 预处理
+		Logger:      NewZapGormLogger(100 * time.Millisecond), // 配置 GORM 日志器
+		PrepareStmt: true,                                     // 预处理
 	})
 	if err != nil {
 		global.Log.Error("InitDB() failed to connect database", zap.Error(err))

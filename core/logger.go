@@ -77,8 +77,9 @@ func InitLogger(logDir string) {
 	)
 }
 
-// GormLog 适配gorm日志
+// ZapGormLogger 适配gorm日志
 /*
+// 实现以下接口即可
 //	type Interface interface {
 //		LogMode(LogLevel) Interface
 //		Info(context.Context, string, ...interface{})
@@ -87,29 +88,90 @@ func InitLogger(logDir string) {
 //		Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error)
 //	}
 */
-type GormLog struct {
+
+// ZapGormLogger 实现 gorm logger.Interface
+type ZapGormLogger struct {
+	ZapLogger     *zap.Logger
+	SlowThreshold time.Duration
 }
 
-// LogMode log mode
-func (l *GormLog) LogMode(level logger.LogLevel) logger.Interface {
-	return l
+// NewZapGormLogger 创建适配 zap 的 GORM 日志器
+func NewZapGormLogger(slowThreshold time.Duration) *ZapGormLogger {
+	return &ZapGormLogger{
+		ZapLogger:     global.Log,
+		SlowThreshold: slowThreshold,
+	}
 }
 
-// Info print info
-func (l *GormLog) Info(ctx context.Context, msg string, data ...interface{}) {
-	global.Log.Info(msg)
+// LogMode 实现 logger.Interface 的 LogMode 方法
+func (l *ZapGormLogger) LogMode(level logger.LogLevel) logger.Interface {
+	newLogger := *l
+	return &newLogger
 }
 
-// Warn print warn messages
-func (l *GormLog) Warn(ctx context.Context, msg string, data ...interface{}) {
-	global.Log.Warn(msg)
+// Info 实现 logger.Interface 的 Info 方法
+func (l *ZapGormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Info(msg, zap.Any("data", data))
 }
 
-// Error print error messages
-func (l *GormLog) Error(ctx context.Context, msg string, data ...interface{}) {
-	global.Log.Error(msg)
+// Warn 实现 logger.Interface 的 Warn 方法
+func (l *ZapGormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Warn(msg, zap.Any("data", data))
 }
 
-func (l *GormLog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	return
+// Error 实现 logger.Interface 的 Error 方法
+func (l *ZapGormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Error(msg, zap.Any("data", data))
+}
+
+// Trace 实现 logger.Interface 的 Trace 方法
+func (l *ZapGormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+	elapsed := time.Since(begin)
+	sql, rows := fc()
+
+	fields := []zap.Field{
+		zap.String("sql", sql),
+		zap.Int64("rows", rows),
+		zap.Duration("elapsed", elapsed),
+	}
+
+	switch {
+	case err != nil:
+		l.ZapLogger.Error("gorm_trace_error", append(fields, zap.Error(err))...)
+	case elapsed > l.SlowThreshold && l.SlowThreshold != 0:
+		l.ZapLogger.Warn("gorm_slow_query", fields...)
+	default:
+		l.ZapLogger.Debug("gorm_trace", fields...)
+	}
+}
+
+// 日志双写参考方法
+// 创建文件日志核心
+func createFileCore(filename string) zapcore.Core {
+	fileWriter := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   filename,
+		MaxSize:    100, // MB
+		MaxBackups: 30,
+		MaxAge:     7, // days
+		Compress:   true,
+	})
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	return zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig),
+		fileWriter,
+		zap.InfoLevel,
+	)
+}
+
+// 创建控制台日志核心
+func createConsoleCore(level zapcore.Level) zapcore.Core {
+	consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+	return zapcore.NewCore(
+		consoleEncoder,
+		zapcore.Lock(os.Stdout),
+		level,
+	)
 }
