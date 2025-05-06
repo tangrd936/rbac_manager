@@ -67,14 +67,13 @@ func InitLogger(logDir string) {
 		zap.InfoLevel,                         // 日志级别
 	)
 
-	// ----------------------------
 	// 5. 构建Logger实例
-	// ----------------------------
 	global.Log = zap.New(core,
 		zap.AddCaller(),                   // 记录调用信息,即代码行号
 		zap.AddCallerSkip(1),              // 包装函数调用层级
 		zap.AddStacktrace(zap.ErrorLevel), // 错误级别记录堆栈
 	)
+	global.Log.Info("init logger success")
 }
 
 // ZapGormLogger 适配gorm日志

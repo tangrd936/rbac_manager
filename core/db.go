@@ -47,4 +47,5 @@ func InitDB() {
 
 	// 设置全局数据库连接
 	global.Db = db
+	global.Log.Info("init db success")
 }

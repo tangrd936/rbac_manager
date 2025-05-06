@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"rbac_manager/core"
-	"rbac_manager/global"
 )
 
 //TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
@@ -11,7 +9,7 @@ import (
 
 func main() {
 	core.InitLogger("logs")
-	global.Conf = core.GetConfig()
+	core.InitConfig("dev")
 	core.InitDB()
-	global.Log.Info(fmt.Sprintf("%#v\n", global.Conf))
+	core.InitRedis()
 }

@@ -1,6 +1,7 @@
 package global
 
 import (
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"rbac_manager/config"
@@ -13,4 +14,6 @@ var (
 	Log *zap.Logger
 	// Db 数据库连接
 	Db *gorm.DB
+	// Redis redis连接
+	Redis *redis.Client
 )
