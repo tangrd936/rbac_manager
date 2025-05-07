@@ -2,6 +2,7 @@ package main
 
 import (
 	"rbac_manager/core"
+	"rbac_manager/models"
 )
 
 //TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
@@ -12,4 +13,5 @@ func main() {
 	core.InitConfig("dev")
 	core.InitDB()
 	core.InitRedis()
+	models.AutoMigrate()
 }
