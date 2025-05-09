@@ -1,6 +1,7 @@
 package global
 
 import (
+	"github.com/casbin/casbin/v2"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -16,4 +17,6 @@ var (
 	Db *gorm.DB
 	// Redis redis连接
 	Redis *redis.Client
+	// Casbin 配置对象
+	Casbin *casbin.CachedEnforcer
 )
