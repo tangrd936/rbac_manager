@@ -13,5 +13,6 @@ func main() {
 	core.InitConfig("dev")
 	core.InitDB()
 	core.InitRedis()
+	core.InitCasbin()
 	models.AutoMigrate()
 }
