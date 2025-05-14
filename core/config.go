@@ -5,10 +5,12 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"rbac_manager/config"
+	"rbac_manager/flags"
 	"rbac_manager/global"
 )
 
-func InitConfig(env string) {
+func InitConfig() {
+	env := flags.FlagOptions.Env
 	if env == "" {
 		env = "dev"
 	}

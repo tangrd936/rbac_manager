@@ -1,19 +1,20 @@
-package models
+package flags
 
 import (
 	"fmt"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"rbac_manager/global"
+	"rbac_manager/models"
 )
 
 func AutoMigrate() {
 	err := global.Db.AutoMigrate(
-		&UserModel{},
-		&RoleModel{},
-		&UserRoleModel{},
-		&MenuModel{},
-		&ApiModel{},
-		&RoleMenuModel{},
+		&models.UserModel{},
+		&models.RoleModel{},
+		&models.UserRoleModel{},
+		&models.MenuModel{},
+		&models.ApiModel{},
+		&models.RoleMenuModel{},
 		&gormadapter.CasbinRule{},
 	)
 	if err != nil {

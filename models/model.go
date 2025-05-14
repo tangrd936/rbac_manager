@@ -4,17 +4,18 @@ import "gorm.io/gorm"
 
 type UserModel struct {
 	gorm.Model
-	UserName string      `gorm:"size:16" json:"user_name"`
+	UserName string      `gorm:"size:16;unique" json:"user_name"`
 	NickName string      `gorm:"size:32" json:"nick_name"`
 	Avatar   string      `gorm:"size:256" json:"avatar"`
 	Email    string      `gorm:"size:128" json:"email"`
 	Password string      `gorm:"size:64" json:"-"`
+	IsAdmin  bool        `gorm:"default:false" json:"is_admin"`
 	RoleList []RoleModel `gorm:"many2many:user_role_models;joinForeignKey:UserId;joinReferences:RoleId" json:"role_list"`
 }
 
 type RoleModel struct {
 	gorm.Model
-	Title    string      `gorm:"size:16" json:"title"`
+	Title    string      `gorm:"size:16;unique" json:"title"`
 	UserList []UserModel `gorm:"many2many:user_role_models;joinForeignKey:RoleId;joinReferences:UserId" json:"user_list"`
 	MenuList []MenuModel `gorm:"many2many:role_menu_models;joinForeignKey:RoleId;joinReferences:MenuId" json:"role_list"`
 }
