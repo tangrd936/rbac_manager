@@ -3,6 +3,7 @@ package main
 import (
 	"rbac_manager/core"
 	"rbac_manager/flags"
+	"rbac_manager/routers"
 )
 
 //TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
@@ -17,4 +18,6 @@ func main() {
 
 	// 命令行参数运行
 	flags.Run()
+	// 运行web服务
+	routers.Run()
 }
