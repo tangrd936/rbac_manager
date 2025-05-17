@@ -3,7 +3,6 @@ package routers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"rbac_manager/api/user"
 	"rbac_manager/global"
 	"strconv"
 )
@@ -13,7 +12,8 @@ func Run() {
 	r := gin.Default()
 
 	g := r.Group("/api")
-	user.UserRouter(g)
+	UserRouter(g)
+	CaptchaRouter(g)
 
 	//配置静态资源访问
 	r.Static("/static", "static")

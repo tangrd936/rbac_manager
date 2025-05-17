@@ -13,14 +13,8 @@ import (
 type User struct {
 }
 
-func UserRouter(r *gin.RouterGroup) {
-	g := r.Group("/user")
-	user := new(User)
-	g.POST("/login", middleware.BindJson[LoginReq], user.Login)
-}
-
 func (u *User) Login(c *gin.Context) {
-	cr := middleware.GetReqData[LoginReq](c)
+	cr := middleware.GetReqData[UserLoginReq](c)
 	var user models.UserModel
 	err := global.Db.Preload("RoleList").Take(&user, "user_name = ?", cr.Username).Error
 	if err != nil {
@@ -46,6 +40,6 @@ func (u *User) Login(c *gin.Context) {
 		common.FailWithMsg(c, "用户登陆失败")
 		return
 	}
-	res := LoginResp{Token: token}
+	res := UserLoginResp{Token: token}
 	common.Ok(c, res, "用户登录成功")
 }

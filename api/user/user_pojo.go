@@ -1,9 +1,9 @@
 package user
 
-type LoginReq struct {
+type UserLoginReq struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
-type LoginResp struct {
+type UserLoginResp struct {
 	Token string `json:"token"`
 }
