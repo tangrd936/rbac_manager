@@ -11,7 +11,7 @@ import (
 
 type Captcha struct{}
 
-func (captcha Captcha) GenerateCaptcha(c *gin.Context) {
+func (captcha *Captcha) GenerateCaptcha(c *gin.Context) {
 	var driver = base64Captcha.DriverString{
 		Width:           200,
 		Height:          60,

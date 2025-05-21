@@ -14,6 +14,7 @@ func Run() {
 	g := r.Group("/api")
 	UserRouter(g)
 	CaptchaRouter(g)
+	EmailRouter(g)
 
 	//配置静态资源访问
 	r.Static("/static", "static")
