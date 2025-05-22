@@ -9,3 +9,12 @@ type UserLoginReq struct {
 type UserLoginResp struct {
 	Token string `json:"token"`
 }
+type RegisterReq struct {
+	EmailId    string `json:"email_id" binding:"required"`
+	EmailCode  string `json:"email_code" binding:"required"`
+	Email      string `json:"email" binding:"required,email"`
+	Password   string `json:"password" binding:"required"`
+	RePassword string `json:"re_password" binding:"required"`
+}
+type RegisterResp struct {
+}

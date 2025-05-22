@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type UserModel struct {
 	gorm.Model
-	UserName string      `gorm:"size:16;unique" json:"user_name"`
+	UserName string      `gorm:"size:32;unique" json:"user_name"`
 	NickName string      `gorm:"size:32" json:"nick_name"`
 	Avatar   string      `gorm:"size:256" json:"avatar"`
 	Email    string      `gorm:"size:128" json:"email"`
