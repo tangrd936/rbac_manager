@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"rbac_manager/common"
 	"rbac_manager/global"
@@ -14,6 +15,7 @@ import (
 type User struct {
 }
 
+// Login 用户登录
 func (u *User) Login(c *gin.Context) {
 	cr := middleware.GetReqData[UserLoginReq](c)
 	if global.Conf.Captcha.Enable {
@@ -26,13 +28,15 @@ func (u *User) Login(c *gin.Context) {
 			return
 		}
 	}
+	fmt.Printf("密码：%s\n", cr.Password)
 	var user models.UserModel
 	err := global.Db.Preload("RoleList").Take(&user, "user_name = ?", cr.Username).Error
 	if err != nil {
 		common.FailWithMsg(c, "用户名或密码错误", err)
 		return
 	}
-	if pwd.ComparePasswords(user.Password, cr.Password) {
+	fmt.Printf("用户加密的密码：%s\n", user.Password)
+	if !pwd.ComparePasswords(user.Password, cr.Password) {
 		common.FailWithMsg(c, "用户名或密码错误", nil)
 		return
 	}
@@ -54,6 +58,7 @@ func (u *User) Login(c *gin.Context) {
 	common.Ok(c, res, "用户登录成功")
 }
 
+// Register 用户注册
 func (u *User) Register(c *gin.Context) {
 	cr := middleware.GetReqData[RegisterReq](c)
 
@@ -96,4 +101,36 @@ func (u *User) Register(c *gin.Context) {
 	global.Redis.Del(c.Request.Context(), cr.Email)
 
 	common.OkWithMsg(c, "用户注册成功")
+}
+
+// UpdatePassword 修改密码
+func (u *User) UpdatePassword(c *gin.Context) {
+	cr := middleware.GetReqData[UpdatePwdReq](c)
+	auth := middleware.GetAuth(c)
+	global.Log.Info(fmt.Sprintf("用户信息：%s", auth))
+	var user models.UserModel
+	err := global.Db.Take(&user, auth.UserId).Error
+	if err != nil {
+		common.FailWithMsg(c, "用户不存在", err)
+		return
+	}
+	fmt.Printf("用户信息为：%#v\n", user)
+	if !pwd.ComparePasswords(user.Password, cr.OldPwd) {
+		common.FailWithMsg(c, "原密码错误", nil)
+		return
+	}
+
+	if cr.NewPwd != cr.ReNewPwd {
+		common.FailWithMsg(c, "两次输入密码不一致", nil)
+		return
+	}
+	// 新密码加密
+	newPwd := pwd.HashPassword(cr.NewPwd)
+	err = global.Db.Model(&user).Update("password", newPwd).Error
+	if err != nil {
+		common.FailWithMsg(c, "修改密码失败", err)
+		return
+	}
+
+	common.OkWithMsg(c, "修改密码成功")
 }

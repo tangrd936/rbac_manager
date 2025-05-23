@@ -18,3 +18,10 @@ type RegisterReq struct {
 }
 type RegisterResp struct {
 }
+
+type UpdatePwdReq struct {
+	OldPwd   string `json:"old_pwd" binding:"required"`
+	NewPwd   string `json:"new_pwd" binding:"required,max=64"`
+	ReNewPwd string `json:"re_new_pwd" binding:"required,max=64"`
+}
+type UpdatePwdResp struct{}

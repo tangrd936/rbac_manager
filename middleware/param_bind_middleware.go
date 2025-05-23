@@ -14,7 +14,7 @@ func BindJson[T any](c *gin.Context) {
 		return
 	}
 	c.Set("req", cr)
-	//c.Next()
+	c.Next()
 	return
 }
 
