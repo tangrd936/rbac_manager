@@ -15,6 +15,7 @@ func Run() {
 	UserRouter(g)
 	CaptchaRouter(g)
 	EmailRouter(g)
+	ImageRouter(g)
 
 	//配置静态资源访问
 	r.Static("/static", "static")
