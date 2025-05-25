@@ -12,4 +12,8 @@ func UserRouter(r *gin.RouterGroup) {
 	g.POST("/login", middleware.BindJson[userApi.UserLoginReq], user.Login)
 	g.POST("/register", middleware.BindJson[userApi.RegisterReq], user.Register)
 	g.PUT("/password", middleware.AuthMiddleware, middleware.BindJson[userApi.UpdatePwdReq], user.UpdatePassword)
+	g.PUT("/info", middleware.AuthMiddleware, middleware.BindJson[userApi.UpdateUserInfoReq], user.UpdateUserInfo)
+	g.GET("/info", middleware.AuthMiddleware, user.GetUserInfo)
+	g.GET("/list", middleware.AuthMiddleware, middleware.BindQuery[userApi.GetUserInfoListReq], user.GetUserInfoList)
+	g.DELETE("/info", middleware.AuthMiddleware, middleware.BindJson[userApi.DeleteUserReq], user.DelUser)
 }

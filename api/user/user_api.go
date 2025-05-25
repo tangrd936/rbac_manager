@@ -35,20 +35,15 @@ func (u *User) Login(c *gin.Context) {
 		common.FailWithMsg(c, "用户名或密码错误", err)
 		return
 	}
-	fmt.Printf("用户加密的密码：%s\n", user.Password)
 	if !pwd.ComparePasswords(user.Password, cr.Password) {
 		common.FailWithMsg(c, "用户名或密码错误", nil)
 		return
-	}
-	var roleList []uint
-	for _, role := range user.RoleList {
-		roleList = append(roleList, role.ID)
 	}
 
 	token, err := jwts.GetToken(jwts.ClaimUserInfo{
 		UserId:   user.ID,
 		UserName: user.UserName,
-		RoleList: roleList,
+		RoleList: user.GetRoleList(),
 	})
 	if err != nil {
 		common.FailWithMsg(c, "用户登陆失败", err)
@@ -114,7 +109,6 @@ func (u *User) UpdatePassword(c *gin.Context) {
 		common.FailWithMsg(c, "用户不存在", err)
 		return
 	}
-	fmt.Printf("用户信息为：%#v\n", user)
 	if !pwd.ComparePasswords(user.Password, cr.OldPwd) {
 		common.FailWithMsg(c, "原密码错误", nil)
 		return
@@ -133,4 +127,106 @@ func (u *User) UpdatePassword(c *gin.Context) {
 	}
 
 	common.OkWithMsg(c, "修改密码成功")
+}
+
+// UpdateUserInfo 更新用户信息
+func (u *User) UpdateUserInfo(c *gin.Context) {
+	cr := middleware.GetReqData[UpdateUserInfoReq](c)
+	auth := middleware.GetAuth(c)
+	global.Log.Info(fmt.Sprintf("用户信息：%s", auth))
+	var user models.UserModel
+	err := global.Db.Take(&user, auth.UserId).Error
+	if err != nil {
+		common.FailWithMsg(c, "用户不存在", err)
+		return
+	}
+
+	err = global.Db.Model(&user).Updates(models.UserModel{
+		NickName: cr.NickName,
+		Avatar:   cr.AvatarUrl,
+	}).Error
+	if err != nil {
+		common.FailWithMsg(c, "更新用户信息失败", err)
+		return
+	}
+	common.OkWithMsg(c, "更新用户信息成功")
+}
+
+// GetUserInfo 获取用户信息
+func (u *User) GetUserInfo(c *gin.Context) {
+	auth := middleware.GetAuth(c)
+	global.Log.Info(fmt.Sprintf("用户信息：%s", auth))
+	var user models.UserModel
+	err := global.Db.Preload("RoleList").Take(&user, auth.UserId).Error
+	if err != nil {
+		common.FailWithMsg(c, "用户不存在", err)
+		return
+	}
+
+	data := GetUserInfoResp{
+		UserId:   user.ID,
+		NickName: user.NickName,
+		Avatar:   user.Avatar,
+		RoleList: user.GetRoleList(),
+	}
+	common.OkWithData(c, data)
+}
+
+// GetUserInfoList 获取用户信息列表
+func (u *User) GetUserInfoList(c *gin.Context) {
+	auth := middleware.GetAuth(c)
+	global.Log.Info(fmt.Sprintf("登录用户信息：%+v", auth))
+	var user models.UserModel
+	err := global.Db.Preload("RoleList").Take(&user, auth.UserId).Error
+	if err != nil {
+		common.FailWithMsg(c, "用户不存在", err)
+		return
+	}
+	// 判断当前用户是否为管理员
+	if !user.IsAdmin {
+		common.FailWithMsg(c, "当前用户不是管理员", err)
+		return
+	}
+
+	cr := middleware.GetReqData[GetUserInfoListReq](c)
+	list := make([]models.UserModel, 0)
+	offset := (cr.Page - 1) * cr.Limit
+	global.Db.Preload("RoleList").Where(models.UserModel{
+		UserName: cr.UserName,
+		Email:    cr.Email,
+	}).Where("nick_name like ?", fmt.Sprintf("%%%s%%", cr.Key)).Limit(cr.Limit).Offset(offset).Order(cr.Sort).Find(&list)
+
+	data := GetUserInfoListResp{
+		UserInfoList: list,
+		Count:        len(list),
+	}
+	common.OkWithData(c, data)
+}
+
+// DelUser 获取用户信息列表
+func (u *User) DelUser(c *gin.Context) {
+	auth := middleware.GetAuth(c)
+	global.Log.Info(fmt.Sprintf("登录用户信息：%+v", auth))
+	var user models.UserModel
+	err := global.Db.Preload("RoleList").Take(&user, auth.UserId).Error
+	if err != nil {
+		common.FailWithMsg(c, "用户不存在", err)
+		return
+	}
+	// 判断当前用户是否为管理员
+	if !user.IsAdmin {
+		common.FailWithMsg(c, "当前用户不是管理员", err)
+		return
+	}
+
+	cr := middleware.GetReqData[DeleteUserReq](c)
+	list := make([]models.UserModel, 0)
+	global.Db.Find(&list, "id in ?", cr.IdList)
+	var count int64
+	if len(list) > 0 {
+		count = global.Db.Delete(&list).RowsAffected
+	}
+
+	msg := fmt.Sprintf("删除用户 %d 个", count)
+	common.OkWithMsg(c, msg)
 }

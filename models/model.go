@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+	"gorm.io/gorm"
+	"rbac_manager/global"
+)
 
 type UserModel struct {
 	gorm.Model
@@ -11,6 +15,21 @@ type UserModel struct {
 	Password string      `gorm:"size:64" json:"-"`
 	IsAdmin  bool        `gorm:"default:false" json:"is_admin"`
 	RoleList []RoleModel `gorm:"many2many:user_role_models;joinForeignKey:UserId;joinReferences:RoleId" json:"role_list"`
+}
+
+func (u *UserModel) BeforeDelete(tx *gorm.DB) error {
+	var userRoleList []UserRoleModel
+	err := tx.Find(&userRoleList, "user_id = ?", u.ID).Delete(&userRoleList).Error
+	global.Log.Info(fmt.Sprintf("删除用户角色关联表 %d 条数据", len(userRoleList)))
+	return err
+}
+
+func (u *UserModel) GetRoleList() []uint {
+	var roleList []uint
+	for _, role := range u.RoleList {
+		roleList = append(roleList, role.ID)
+	}
+	return roleList
 }
 
 type RoleModel struct {
